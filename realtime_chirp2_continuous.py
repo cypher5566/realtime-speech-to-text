@@ -11,6 +11,7 @@ import threading
 import time
 from queue import Queue
 import pyaudio
+import re
 from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech
 
@@ -65,6 +66,34 @@ def load_custom_vocabulary():
     except Exception as e:
         print(f"⚠️ 載入詞彙時出錯: {e}")
         return []
+
+def fix_capitalization(text, custom_phrases):
+    """修正文字中專有名詞的大小寫"""
+    if not custom_phrases:
+        return text
+    
+    result = text
+    
+    # 為每個自定義詞彙進行大小寫修正
+    for phrase in custom_phrases:
+        # 創建不區分大小寫的搜尋模式
+        # 使用單詞邊界來確保完整匹配，但允許一些標點符號
+        words = phrase.split()
+        
+        if len(words) == 1:
+            # 單詞匹配：使用單詞邊界
+            pattern = r'\b' + re.escape(phrase.lower()) + r'\b'
+        else:
+            # 多詞匹配：更靈活的匹配
+            pattern = r'\b' + r'\s+'.join(re.escape(word.lower()) for word in words) + r'\b'
+        
+        def replace_func(match):
+            return phrase  # 返回正確的大小寫版本
+        
+        # 不區分大小寫的替換
+        result = re.sub(pattern, replace_func, result, flags=re.IGNORECASE)
+    
+    return result
 
 class AudioStreamer:
     """音頻流處理器"""
@@ -234,6 +263,9 @@ class ContinuousTranscriber:
         """處理識別響應"""
         last_interim_length = 0
         
+        # 載入詞彙用於大小寫修正
+        custom_phrases = load_custom_vocabulary()
+        
         try:
             for response in responses:
                 if self.should_stop:
@@ -244,11 +276,13 @@ class ContinuousTranscriber:
                         transcript = result.alternatives[0].transcript.strip()
                         
                         if result.is_final:
-                            # 最終結果 - 綠色，確保清除所有中間結果
-                            clear_chars = max(0, last_interim_length - len(transcript) - 3)
+                            # 最終結果 - 綠色，先修正大小寫再顯示
+                            corrected_transcript = fix_capitalization(transcript, custom_phrases)
+                            
+                            clear_chars = max(0, last_interim_length - len(corrected_transcript) - 3)
                             overwrite_chars = " " * clear_chars
                             
-                            print(f"\r{Colors.GREEN}✅ {transcript}{Colors.END}{overwrite_chars}")
+                            print(f"\r{Colors.GREEN}✅ {corrected_transcript}{Colors.END}{overwrite_chars}")
                             print("-" * 60)
                             last_interim_length = 0
                         else:
