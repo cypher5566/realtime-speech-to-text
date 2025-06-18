@@ -182,7 +182,7 @@ def transcribe_streaming_v2():
 
 def listen_print_loop(responses):
     """處理並顯示轉錄結果"""
-    num_chars_printed = 0
+    last_interim_length = 0
     
     for response in responses:
         if not response.results:
@@ -192,21 +192,27 @@ def listen_print_loop(responses):
         if not result.alternatives:
             continue
 
-        transcript = result.alternatives[0].transcript
-
-        # 清除之前的輸出
-        overwrite_chars = " " * (num_chars_printed - len(transcript))
+        transcript = result.alternatives[0].transcript.strip()
 
         if not result.is_final:
-            # 中間結果 - 灰色
-            sys.stdout.write(f"\r🔘 \033[90m{transcript}{overwrite_chars}\033[0m")
+            # 中間結果 - 灰色，覆蓋之前的內容
+            # 計算需要清除的字符數量
+            clear_chars = max(0, last_interim_length - len(transcript) - 3)
+            overwrite_chars = " " * clear_chars
+            
+            sys.stdout.write(f"\r🔘 \033[90m{transcript}\033[0m{overwrite_chars}")
             sys.stdout.flush()
-            num_chars_printed = len(transcript) + 3
+            
+            # 記錄當前行的長度（包括emoji和前綴）
+            last_interim_length = len(transcript) + 3
         else:
-            # 最終結果 - 綠色
+            # 最終結果 - 綠色，確保清除所有中間結果
+            clear_chars = max(0, last_interim_length - len(transcript) - 3)
+            overwrite_chars = " " * clear_chars
+            
             print(f"\r✅ \033[92m{transcript}\033[0m{overwrite_chars}")
             print("-" * 60)
-            num_chars_printed = 0
+            last_interim_length = 0
 
             # 檢查退出關鍵字
             if any(word in transcript.lower() for word in ["exit", "quit", "stop"]):

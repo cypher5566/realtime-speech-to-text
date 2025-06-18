@@ -232,6 +232,8 @@ class ContinuousTranscriber:
     
     def process_responses(self, responses):
         """處理識別響應"""
+        last_interim_length = 0
+        
         try:
             for response in responses:
                 if self.should_stop:
@@ -242,11 +244,23 @@ class ContinuousTranscriber:
                         transcript = result.alternatives[0].transcript.strip()
                         
                         if result.is_final:
-                            print(f"{Colors.GREEN}✅ {transcript}{Colors.END}")
+                            # 最終結果 - 綠色，確保清除所有中間結果
+                            clear_chars = max(0, last_interim_length - len(transcript) - 3)
+                            overwrite_chars = " " * clear_chars
+                            
+                            print(f"\r{Colors.GREEN}✅ {transcript}{Colors.END}{overwrite_chars}")
                             print("-" * 60)
+                            last_interim_length = 0
                         else:
-                            # 清除當前行並顯示中間結果
-                            print(f"\r{Colors.GREY}🔘 {transcript}{Colors.END}", end='', flush=True)
+                            # 中間結果 - 灰色，覆蓋之前的內容
+                            # 計算需要清除的字符數量
+                            clear_chars = max(0, last_interim_length - len(transcript) - 3)
+                            overwrite_chars = " " * clear_chars
+                            
+                            print(f"\r{Colors.GREY}🔘 {transcript}{Colors.END}{overwrite_chars}", end='', flush=True)
+                            
+                            # 記錄當前行的長度（包括emoji和前綴）
+                            last_interim_length = len(transcript) + 3
                             
         except Exception as e:
             if "Max duration of 5 minutes" not in str(e):
