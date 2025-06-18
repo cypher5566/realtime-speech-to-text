@@ -36,14 +36,15 @@ fi
 echo ""
 echo "🚀 選擇功能:"
 echo "1. 🎤 實時語音轉文字 - Chirp 2 修復版 (推薦，已修復編碼問題)"
-echo "2. 🎤 實時語音轉文字 - Chirp 2 原版 (可能有編碼問題)"
-echo "3. 🎤 實時語音轉文字 - Chirp 1 (基本，不支持流式)"
-echo "4. 📁 轉錄音頻檔案"
-echo "5. 🎙️ 錄製測試音頻"
-echo "6. 📚 管理自定義詞彙 (專業術語)"
+echo "2. ⏱️ 連續實時轉錄 - 無時間限制 (自動處理5分鐘限制)"
+echo "3. 🎤 實時語音轉文字 - Chirp 2 原版 (可能有編碼問題)"
+echo "4. 🎤 實時語音轉文字 - Chirp 1 (基本，不支持流式)"
+echo "5. 📁 轉錄音頻檔案"
+echo "6. 🎙️ 錄製測試音頻"
+echo "7. 📚 管理自定義詞彙 (專業術語)"
 echo ""
 
-read -p "請選擇 (1-6): " choice
+read -p "請選擇 (1-7): " choice
 
 case $choice in
     1)
@@ -52,29 +53,35 @@ case $choice in
         python realtime_chirp2_fixed.py
         ;;
     2)
+        echo "⏱️ 啟動連續實時轉錄 - 無時間限制..."
+        echo "🚀 自動處理 Google Cloud 5分鐘流式限制"
+        echo "✨ 支持無限時長錄音，自動重新連接"
+        python realtime_chirp2_continuous.py
+        ;;
+    3)
         echo "🎤 啟動實時語音轉文字 - Chirp 2 原版..."
         echo "⚠️  注意: 可能有編碼問題"
         python realtime_chirp2.py
         ;;
-    3)
+    4)
         echo "🎤 啟動實時語音轉文字 - Chirp 1..."
         echo "⚠️  注意: Chirp 1 不支持流式識別，將使用分段處理"
         python realtime_chirp.py
         ;;
-    4)
+    5)
         echo "📁 啟動音頻檔案轉錄..."
         python chirp_transcribe.py
         ;;
-    5)
+    6)
         echo "🎙️ 啟動音頻錄製..."
         python record_audio.py
         ;;
-    6)
+    7)
         echo "📚 啟動自定義詞彙管理..."
         python custom_vocabulary.py
         ;;
     *)
-        echo "❌ 無效選擇，啟動 Chirp 2 修復版..."
-        python realtime_chirp2_fixed.py
+        echo "❌ 無效選擇，啟動連續實時轉錄..."
+        python realtime_chirp2_continuous.py
         ;;
 esac 
