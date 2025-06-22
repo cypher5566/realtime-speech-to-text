@@ -32,7 +32,7 @@ class TranslationManager:
     """翻譯管理器 - 智能翻譯觸發"""
     
     def __init__(self):
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-06-17')
         self.translation_queue = Queue()
         self.should_stop = False
         self.last_translation_time = 0
@@ -184,7 +184,7 @@ def transcribe_streaming_v2():
     print("=" * 60)
     print(f"📍 項目: {PROJECT_ID}")
     print("🚀 使用 Chirp 2 模型進行實時語音識別")
-    print("🌐 使用 Gemini-2.0-flash-exp 智能翻譯")
+    print("🌐 使用 Gemini-2.5-flash-lite 智能翻譯")
     print("📝 按 Ctrl+C 停止")
     print("=" * 60)
 

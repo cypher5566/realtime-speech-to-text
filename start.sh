@@ -80,7 +80,7 @@ case $choice in
         ;;
     3)
         echo "🌐 啟動實時轉錄 + 中文翻譯..."
-        echo "✨ 使用 Chirp 2 + Gemini 智能翻譯"
+        echo "✨ 使用 Chirp 2 + Gemini 2.5 Flash-Lite 智能翻譯"
         echo "🎯 英文語音 → 英文字幕 → 中文翻譯"
         python realtime_chirp2_with_translation.py
         ;;
